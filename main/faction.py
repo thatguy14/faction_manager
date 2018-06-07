@@ -14,6 +14,137 @@ TODO
 
  
 from collections import OrderedDict
+import tkinter as tk
+from tkinter.scrolledtext import ScrolledText
+import csv
+
+class faction_gui(tk.Toplevel):
+    def __init__(self):
+        tk.Toplevel.__init__(self)
+        self.title("Faction Sheet v1")
+        self.geometry("400x500")
+        self.option_add("*Font",("Arial",14))
+        
+        #This sets up the ability to resize the window and delegates each column to be equal with each other, 
+        #see https://stackoverflow.com/questions/37870982/why-is-tkinter-optionmenu-changing-the-size-of-its-parent?rq=1
+        self.grid_columnconfigure(0,weight=1,uniform="column")
+        self.grid_columnconfigure(1,weight=1,uniform="column")
+        self.grid_columnconfigure(2,weight=1,uniform="column")
+        
+        #This is the beginning of the menu bar
+        self.menubar = tk.Menu(self)
+        self.file_menu = tk.Menu(self.menubar,tearoff = 0)
+        
+        self.menubar.add_cascade(label="File",menu=self.file_menu)
+        
+        self.config(menu = self.menubar)
+        #This is the end of the menubar
+        
+        #This data frame contains all the input information
+        #self.name_frame = tk.Frame(self,width =400,height=500,background="black")
+        #self.name_frame.grid()
+        
+        self.faction_name = tk.Label(self,text="Faction Name: ")
+        self.faction_name.grid(row=0,column=0,sticky="w")
+        
+        self.faction_name_entry = tk.Entry(self)
+        self.faction_name_entry.grid(row=1,column=0,sticky="w",columnspan=1)
+                
+        self.description = tk.Label(self,text="Description: ")
+        self.description.grid(row=2,column=0,sticky="w")
+        
+        
+        self.description_box = ScrolledText(self,height=5)
+        self.description_box.grid(row=3,column=0,sticky="w",columnspan = 3)
+        
+        ##
+        #
+        self.tag_label = tk.Label(self,text="Tags:")
+        self.tag_label.grid(row=4,column=0,sticky='w',columnspan=4)
+        
+        #add drop down menu for tags
+        self.get_faction_tags()
+        self.tag1 = tk.StringVar(self)
+        self.tag1.set(self.faction_tags_entries[0])
+#        self.tag2 = tk.StringVar(self)
+#        self.tag2.set(self.faction_tags_entries[1])
+        
+        self.list_of_tags = []
+        self.string_of_tags = tk.StringVar()
+        self.print_tags()
+        
+        self.tag_list_label = tk.Label(self,textvariable=self.string_of_tags)
+        
+        
+        self.option_tag1 = tk.OptionMenu(self,self.tag1,*self.faction_tags_entries,command=self.add_tag)
+        self.option_tag1.config(width=20,pady=6)
+        self.option_tag1.grid(row=5,column=0,sticky="w",columnspan=2)
+        self.tag_list_label.grid(row=6,column=0,sticky="w",columnspan=3)
+        self.remove_tag_button = tk.Button(self, text="Remove Tag", command=self.remove_tag)
+        
+        self.remove_tag_button.grid(row=5,column=2,sticky='w')
+        
+        ##
+        ##
+        #The force, cunning, and wealth attributes
+        self.faction_fcw_label_overall = tk.Label(self,text='Faction Attributes')
+        self.faction_fcw_label_overall.grid(row=7,column=0,columnspan=2,sticky='w')
+        self.faction_fcw_label_force = tk.Label(self,text="Force")
+        self.faction_fcw_label_force.grid(row=8,column=0)
+        self.faction_fcw_label_force_spinbox = tk.Spinbox(self,from_=0, to=8,width=5)
+        self.faction_fcw_label_force_spinbox.grid(row=9,column=0)
+        
+        self.faction_fcw_label_cunning = tk.Label(self,text="Cunning")
+        self.faction_fcw_label_cunning .grid(row=8,column=1)
+        self.faction_fcw_label_cunning_spinbox = tk.Spinbox(self,from_=0, to=8,width=5)
+        self.faction_fcw_label_cunning_spinbox.grid(row=9,column=1)
+        
+        self.faction_fcw_label_wealth = tk.Label(self,text="Wealth")
+        self.faction_fcw_label_wealth.grid(row=8,column=2)
+        self.faction_fcw_label_wealth_spinbox = tk.Spinbox(self,from_=0, to=8,width=5)
+        self.faction_fcw_label_wealth_spinbox.grid(row=9,column=2)
+        ##
+        
+    def get_faction_tags(self):
+        self.faction_tags = OrderedDict()
+    #How to access tags
+    #print(new_faction_gui.faction_tags)
+    #print(type(new_faction_gui.faction_tags['Colonists'][0]))
+        with open('tags.csv','rt') as tab_file:
+            csvread = csv.reader(tab_file,delimiter=',')
+            for row in csvread:
+                self.faction_tags[row[0]] = row[1:]
+        
+        self.faction_tags_entries = list(self.faction_tags.keys())
+    
+    def add_tag(self,t):
+        if t not in self.list_of_tags:
+            self.list_of_tags.append(t)
+            self.print_tags()
+        
+        
+    def print_tags(self):
+        curr_string = ""
+        if len(self.list_of_tags) == 0:
+            curr_string = "There are no tags"
+            self.string_of_tags.set(curr_string)
+        elif len(self.list_of_tags) == 1:
+            curr_string = self.list_of_tags[0]
+            self.string_of_tags.set(curr_string)
+        else:
+            curr_string = [", ".join(self.list_of_tags)]
+            self.string_of_tags.set(curr_string[0])
+    
+    def remove_tag(self):
+        curr_entry_remove = self.tag1.get()
+        
+        if curr_entry_remove in self.list_of_tags:
+            self.list_of_tags.remove(curr_entry_remove)
+            self.print_tags()
+        else:
+            print("Not in the list")
+    
+
 class faction:
     exp_table = OrderedDict([(0,0),(1,1),(2,2),(3,4),(4,6),(5,9),(6,12),(7,16),(8,20)])
     #This contains the entire faction list loaded from the json file. 
