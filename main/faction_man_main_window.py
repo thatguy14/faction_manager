@@ -11,14 +11,15 @@ import faction as fac
 
 class MainWindow(tk.Frame):
     counter = 0
-    def __init__(self, *args, **kwargs):
+    def __init__(self, parent, *args, **kwargs):
         tk.Frame.__init__(self, *args, **kwargs)
+        self.parent = parent
         self.button = tk.Button(self, text="Create Faction Window", 
                                 command=self.create_faction_window)
         self.button.grid(row=0,column=0)
 
     def create_faction_window(self):
-        self.faction_win = fac.faction_gui()
+        self.faction_win = fac.faction_gui(self.parent)
         
 
     
